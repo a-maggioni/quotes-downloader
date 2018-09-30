@@ -10,6 +10,7 @@ import it.intre.messagedispatcher.producer.Producer;
 import it.intre.quotesdownloader.common.Constants;
 import it.intre.quotesdownloader.downloader.IexQuoteDownloader;
 import it.intre.quotesdownloader.downloader.QuoteDownloader;
+import it.intre.quotesdownloader.downloader.RandomQuoteDownloader;
 import it.intre.quotesdownloader.model.Quote;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,7 @@ public class Main {
         CommandLine commandLine = getCommandLine(args);
         final String host = commandLine.getOptionValue("host");
         final String port = commandLine.getOptionValue("port");
+        final boolean random = commandLine.hasOption("random");
 
         logger.info("Waiting for stocks...");
         List<String> stocksSymbols = new ArrayList<>();
@@ -43,7 +45,7 @@ public class Main {
         logger.info("Stocks read");
 
         Map<String, Quote> quotesMap = new HashMap<>();
-        QuoteDownloader quoteDownloader = new IexQuoteDownloader();
+        QuoteDownloader quoteDownloader = random ? new RandomQuoteDownloader() : new IexQuoteDownloader();
         KafkaConfiguration outputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.OUTPUT_TOPIC);
         Producer producer = new KafkaProducer<String, Quote>(outputConfiguration);
         while (true) {
@@ -83,6 +85,8 @@ public class Main {
         Option port = new Option("p", "port", true, "Kafka port");
         port.setRequired(true);
         options.addOption(port);
+        Option random = new Option("r", "random", false, "Enable random downloader");
+        options.addOption(random);
         return options;
     }
 
