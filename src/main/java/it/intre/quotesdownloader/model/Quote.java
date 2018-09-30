@@ -1,5 +1,9 @@
 package it.intre.quotesdownloader.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -53,28 +57,17 @@ public class Quote {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Quote)) return false;
-        Quote quote = (Quote) o;
-        return Objects.equals(getSymbol(), quote.getSymbol()) &&
-                Objects.equals(getPrice(), quote.getPrice()) &&
-                Objects.equals(getVolume(), quote.getVolume()) &&
-                Objects.equals(getTimestamp(), quote.getTimestamp());
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSymbol(), getPrice(), getVolume(), getTimestamp());
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override
     public String toString() {
-        return "Quote{" +
-                "symbol=" + symbol +
-                ", price=" + price +
-                ", volume=" + volume +
-                ", timestamp=" + timestamp +
-                '}';
+        return ToStringBuilder.reflectionToString(this);
     }
 }
