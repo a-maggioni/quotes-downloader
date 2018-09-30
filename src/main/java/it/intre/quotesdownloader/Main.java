@@ -30,8 +30,9 @@ public class Main {
         List<String> stocksSymbols = new ArrayList<>();
         KafkaConfiguration inputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.INPUT_TOPIC);
         Consumer consumer = new KafkaConsumer<>(inputConfiguration, String.class, String.class);
-        while (stocksSymbols.isEmpty()) {
-            List<Record<String, String>> recordList = consumer.receive();
+        List<Record<String, String>> recordList = new ArrayList<>();
+        while (stocksSymbols.isEmpty() || !recordList.isEmpty()) {
+            recordList = consumer.receive();
             for (Record<String, String> record : recordList) {
                 String stockSymbol = record.getValue();
                 stocksSymbols.add(stockSymbol);
