@@ -45,22 +45,16 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
-
-        <!-- IEX -->
         <dependency>
-            <groupId>pl.zankowski</groupId>
-            <artifactId>iextrading4j-all</artifactId>
-            <version>2.2.3</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
         </dependency>
-
-        <!-- Kafka -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.12</artifactId>
             <version>2.0.0</version>
         </dependency>
-
-        <!-- Log4j -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -72,11 +66,11 @@
             <version>2.11.0</version>
         </dependency>
 
-        <!-- apache.commons-lang3 -->
+        <!-- IEX -->
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
+            <groupId>pl.zankowski</groupId>
+            <artifactId>iextrading4j-all</artifactId>
+            <version>2.2.3</version>
         </dependency>
 
     </dependencies>
