@@ -28,22 +28,7 @@ public class Main {
         final String port = commandLine.getOptionValue("port");
         final boolean random = commandLine.hasOption("random");
 
-        logger.info("Waiting for stocks...");
-        List<String> stocksSymbols = new ArrayList<>();
-        KafkaConfiguration inputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.INPUT_TOPIC);
-        Consumer consumer = new KafkaConsumer<>(inputConfiguration, String.class, String.class);
-        List<Record<String, String>> recordList = new ArrayList<>();
-        while (stocksSymbols.isEmpty() || !recordList.isEmpty()) {
-            recordList = consumer.receive();
-            for (Record<String, String> record : recordList) {
-                String stockSymbol = record.getValue();
-                stocksSymbols.add(stockSymbol);
-                logger.info("Added stock: {}", stockSymbol);
-            }
-            consumer.commit();
-        }
-        logger.info("Stocks read");
-
+        List<String> stocksSymbols = readStocks(host, port);
         Map<String, Quote> quotesMap = new HashMap<>();
         QuoteDownloader quoteDownloader = random ? new RandomQuoteDownloader() : new IexQuoteDownloader();
         KafkaConfiguration outputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.OUTPUT_TOPIC);
@@ -61,6 +46,25 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static List<String> readStocks(final String host, final String port) {
+        logger.info("Reading stocks...");
+        List<String> stocksSymbols = new ArrayList<>();
+        KafkaConfiguration inputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.INPUT_TOPIC);
+        Consumer consumer = new KafkaConsumer<>(inputConfiguration, String.class, String.class);
+        List<Record<String, String>> recordList = new ArrayList<>();
+        while (stocksSymbols.isEmpty() || !recordList.isEmpty()) {
+            recordList = consumer.receive();
+            for (Record<String, String> record : recordList) {
+                String stockSymbol = record.getValue();
+                stocksSymbols.add(stockSymbol);
+                logger.info("Added stock: {}", stockSymbol);
+            }
+            consumer.commit();
+        }
+        logger.info("Stocks read");
+        return stocksSymbols;
     }
 
     private static CommandLine getCommandLine(String[] args) {
