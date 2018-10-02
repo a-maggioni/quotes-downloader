@@ -98,7 +98,7 @@ public class Main {
         return quote != null &&
                 (
                         !quotesMap.containsKey(quote.getSymbol()) ||
-                                !Objects.equals(quote.getTimestamp(), quotesMap.get(quote.getSymbol()).getTimestamp())
+                                quote.getTimestamp() > quotesMap.get(quote.getSymbol()).getTimestamp()
                 );
     }
 
