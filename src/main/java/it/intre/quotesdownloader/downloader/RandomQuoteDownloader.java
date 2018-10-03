@@ -37,16 +37,17 @@ public class RandomQuoteDownloader extends QuoteDownloader {
     }
 
     private BigDecimal getRandomPrice(final Quote quote) {
-        return this.getRandomValue(quote.getPrice(), 2);
+        return this.getRandomValue(quote.getPrice(), false,2);
     }
 
     private BigDecimal getRandomVolume(final Quote quote) {
-        return this.getRandomValue(quote.getVolume(), 0);
+        return this.getRandomValue(quote.getVolume(), true, 0);
     }
 
-    private BigDecimal getRandomValue(final BigDecimal oldValue, final int scale) {
+    private BigDecimal getRandomValue(final BigDecimal oldValue, final boolean alwaysGrowing, final int scale) {
         double volatility = Math.random() * 1.2;
-        double percentageVariation = (Math.random() >= 0.5 ? Math.random() : -Math.random()) * volatility;
+        double rawPercentageVariation = (alwaysGrowing || Math.random() >= 0.5) ? Math.random() : -Math.random();
+        double percentageVariation = rawPercentageVariation * volatility;
         double variation = oldValue.doubleValue() * percentageVariation / 100;
         double newValue = oldValue.doubleValue() + variation;
         return new BigDecimal(newValue).setScale(scale, BigDecimal.ROUND_HALF_UP);
