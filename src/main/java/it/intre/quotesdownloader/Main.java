@@ -8,9 +8,11 @@ import it.intre.messagedispatcher.model.Record;
 import it.intre.messagedispatcher.producer.KafkaProducer;
 import it.intre.messagedispatcher.producer.Producer;
 import it.intre.quotesdownloader.common.Constants;
+import it.intre.quotesdownloader.downloader.FileQuoteDownloader;
 import it.intre.quotesdownloader.downloader.IexQuoteDownloader;
 import it.intre.quotesdownloader.downloader.QuoteDownloader;
 import it.intre.quotesdownloader.downloader.RandomQuoteDownloader;
+import it.intre.quotesdownloader.model.DownloaderType;
 import it.intre.quotesdownloader.model.Quote;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
@@ -22,15 +24,18 @@ public class Main {
 
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         CommandLine commandLine = getCommandLine(args);
         final String host = commandLine.getOptionValue("host");
         final String port = commandLine.getOptionValue("port");
-        final boolean random = commandLine.hasOption("random");
+        final int type = ((Number) commandLine.getParsedOptionValue("type")).intValue();
+        final DownloaderType downloaderType = DownloaderType.values()[type];
+        final int interval = commandLine.hasOption("interval") ?
+                ((Number) commandLine.getParsedOptionValue("interval")).intValue() : Constants.DEFAULT_INTERVAL;
 
         List<String> stocksSymbols = readStocks(host, port);
         Map<String, Quote> quotesMap = new HashMap<>();
-        QuoteDownloader quoteDownloader = random ? new RandomQuoteDownloader() : new IexQuoteDownloader();
+        QuoteDownloader quoteDownloader = getDownloader(downloaderType, interval);
         KafkaConfiguration outputConfiguration = new KafkaConfiguration(host, port, Constants.GROUP_ID, Constants.CLIENT_ID, Constants.OUTPUT_TOPIC);
         Producer producer = new KafkaProducer<String, Quote>(outputConfiguration);
         while (true) {
@@ -67,6 +72,23 @@ public class Main {
         return stocksSymbols;
     }
 
+    private static QuoteDownloader getDownloader(final DownloaderType downloaderType, final int interval) {
+        if (downloaderType.equals(DownloaderType.IEX)) {
+            return new IexQuoteDownloader();
+        } else if (downloaderType.equals(DownloaderType.FILE)) {
+            return new FileQuoteDownloader(interval);
+        }
+        return new RandomQuoteDownloader(interval);
+    }
+
+    private static boolean isNewQuote(Map<String, Quote> quotesMap, Quote quote) {
+        return quote != null &&
+                (
+                        !quotesMap.containsKey(quote.getSymbol()) ||
+                                quote.getTimestamp() > quotesMap.get(quote.getSymbol()).getTimestamp()
+                );
+    }
+
     private static CommandLine getCommandLine(String[] args) {
         CommandLineParser commandLineParser = new DefaultParser();
         HelpFormatter helpFormatter = new HelpFormatter();
@@ -89,17 +111,14 @@ public class Main {
         Option port = new Option("p", "port", true, "Kafka port");
         port.setRequired(true);
         options.addOption(port);
-        Option random = new Option("r", "random", false, "Enable random downloader");
-        options.addOption(random);
+        Option type = new Option("t", "type", true, "Downloader type");
+        type.setType(Number.class);
+        type.setRequired(true);
+        options.addOption(type);
+        Option interval = new Option("i", "interval", true, "Downloader interval (seconds)");
+        interval.setType(Number.class);
+        options.addOption(interval);
         return options;
-    }
-
-    private static boolean isNewQuote(Map<String, Quote> quotesMap, Quote quote) {
-        return quote != null &&
-                (
-                        !quotesMap.containsKey(quote.getSymbol()) ||
-                                quote.getTimestamp() > quotesMap.get(quote.getSymbol()).getTimestamp()
-                );
     }
 
 }

@@ -7,4 +7,5 @@ public final class Constants {
     public static final String INPUT_TOPIC = "Stocks";
     public static final String OUTPUT_TOPIC = "Quotes";
 
+    public static final int DEFAULT_INTERVAL = 5;
 }

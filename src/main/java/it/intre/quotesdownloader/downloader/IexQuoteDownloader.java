@@ -9,6 +9,7 @@ public class IexQuoteDownloader extends QuoteDownloader {
     private IEXTradingClient iexTradingClient;
 
     public IexQuoteDownloader() {
+        super();
         this.iexTradingClient = IEXTradingClient.create();
     }
 

@@ -12,7 +12,8 @@ public class RandomQuoteDownloader extends QuoteDownloader {
     private Map<String, Quote> oldQuotesMap;
     private IexQuoteDownloader iexQuoteDownloader;
 
-    public RandomQuoteDownloader() {
+    public RandomQuoteDownloader(int interval) {
+        super(interval);
         this.oldQuotesMap = new HashMap<>();
         this.iexQuoteDownloader = new IexQuoteDownloader();
     }
@@ -20,16 +21,17 @@ public class RandomQuoteDownloader extends QuoteDownloader {
     public Quote getQuote(final String symbol) {
         try {
             this.logger.trace("Getting quote for {}...", symbol);
+            Quote quote;
             Quote oldQuote = this.oldQuotesMap.containsKey(symbol) ? this.oldQuotesMap.get(symbol) : this.iexQuoteDownloader.getQuote(symbol);
-            Long currentTimestamp = Instant.now().getEpochSecond();
+            Long currentTimestamp = this.getIntervalTimestamp();
             if (currentTimestamp.equals(oldQuote.getTimestamp())) {
-                return oldQuote;
+                quote = oldQuote;
             } else {
-                Quote quote = new Quote(symbol, this.getRandomPrice(oldQuote), this.getRandomVolume(oldQuote), currentTimestamp);
+                quote = new Quote(symbol, this.getRandomPrice(oldQuote), this.getRandomVolume(oldQuote), currentTimestamp);
                 this.oldQuotesMap.put(symbol, quote);
-                this.logger.trace("Got quote: {}", quote);
-                return quote;
             }
+            this.logger.trace("Got quote: {}", quote);
+            return quote;
         } catch (Exception e) {
             this.logger.error("getQuote exception:", e);
             return null;
@@ -37,7 +39,7 @@ public class RandomQuoteDownloader extends QuoteDownloader {
     }
 
     private BigDecimal getRandomPrice(final Quote quote) {
-        return this.getRandomValue(quote.getPrice(), false,2);
+        return this.getRandomValue(quote.getPrice(), false, 2);
     }
 
     private BigDecimal getRandomVolume(final Quote quote) {
