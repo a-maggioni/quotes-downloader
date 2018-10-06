@@ -10,21 +10,19 @@ public abstract class QuoteDownloader {
 
     protected final Logger logger = LogManager.getLogger(QuoteDownloader.class);
 
-    private int interval;
     private Long intervalMillis;
 
     protected QuoteDownloader() {
     }
 
     protected QuoteDownloader(int interval) {
-        this.interval = interval;
         this.intervalMillis = interval * 1000L;
     }
 
     public abstract Quote getQuote(final String symbol);
 
     protected Long getIntervalTimestamp() {
-        return (Instant.now().toEpochMilli() / this.intervalMillis) * this.interval;
+        return (Instant.now().toEpochMilli() / this.intervalMillis) * this.intervalMillis;
     }
 
 }
