@@ -22,12 +22,19 @@ public class RandomQuoteDownloader extends QuoteDownloader {
         try {
             this.logger.trace("Getting quote for {}...", symbol);
             Quote quote;
-            Quote oldQuote = this.oldQuotesMap.containsKey(symbol) ? this.oldQuotesMap.get(symbol) : this.iexQuoteDownloader.getQuote(symbol);
+            Quote oldQuote = this.oldQuotesMap.containsKey(symbol) ?
+                    this.oldQuotesMap.get(symbol) :
+                    this.iexQuoteDownloader.getQuote(symbol);
             Long currentTimestamp = this.getIntervalTimestamp();
             if (currentTimestamp.equals(oldQuote.getTimestamp())) {
                 quote = oldQuote;
             } else {
-                quote = new Quote(symbol, this.getRandomPrice(oldQuote), this.getRandomVolume(oldQuote), currentTimestamp);
+                quote = new Quote(
+                        symbol,
+                        this.getRandomValue(oldQuote.getPrice(), 2),
+                        this.getRandomValue(new BigDecimal(10000), 0),
+                        currentTimestamp
+                );
                 this.oldQuotesMap.put(symbol, quote);
             }
             this.logger.trace("Got quote: {}", quote);
@@ -38,17 +45,9 @@ public class RandomQuoteDownloader extends QuoteDownloader {
         }
     }
 
-    private BigDecimal getRandomPrice(final Quote quote) {
-        return this.getRandomValue(quote.getPrice(), false, 2);
-    }
-
-    private BigDecimal getRandomVolume(final Quote quote) {
-        return this.getRandomValue(quote.getVolume(), true, 0);
-    }
-
-    private BigDecimal getRandomValue(final BigDecimal oldValue, final boolean alwaysGrowing, final int scale) {
+    private BigDecimal getRandomValue(final BigDecimal oldValue, final int scale) {
         double volatility = Math.random() * 1.2;
-        double rawPercentageVariation = (alwaysGrowing || Math.random() >= 0.5) ? Math.random() : -Math.random();
+        double rawPercentageVariation = Math.random() >= 0.5 ? Math.random() : -Math.random();
         double percentageVariation = rawPercentageVariation * volatility;
         double variation = oldValue.doubleValue() * percentageVariation / 100;
         double newValue = oldValue.doubleValue() + variation;
